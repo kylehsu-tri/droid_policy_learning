@@ -63,7 +63,10 @@ def set_env_settings(generator, args):
             key="experiment.save.every_n_epochs",
             name="",
             group=-1,
-            values=[50],
+            values=[
+                # 50,
+                5
+            ],
         )
         generator.add_param(
             key="experiment.mse.enabled",

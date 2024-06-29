@@ -10,16 +10,24 @@ from collections import OrderedDict
 # Note: Assumes naming of dataset in "datasets" for the full DROID dataset is
 # droid
 
-DATA_PATH = ""    # UPDATE WITH PATH TO RLDS DATASETS
-EXP_LOG_PATH = "" # UPDATE WITH PATH TO DESIRED LOGGING DIRECTORY
+DATA_PATH = "/home/ubuntu/tensorflow_datasets"    # UPDATE WITH PATH TO RLDS DATASETS
+EXP_LOG_PATH = "/home/ubuntu/code/fix-droid/logs" # UPDATE WITH PATH TO DESIRED LOGGING DIRECTORY
 EXP_NAMES = OrderedDict(
     [
         # Note: you can add co-training dataset here appending
         # a new dataset to "datasets" and adjusting "sample_weights"
         # accordingly
-        ("droid", {"datasets": ["droid"],
-                   "sample_weights": [1]})                                    
-    ])
+        # ("droid", {"datasets": ["droid"],
+        #            "sample_weights": [1]})
+        (
+            "validate_pick_up_can_target",
+            {
+                "datasets": ["droid_pick_up_can_target"],
+                "sample_weights": [1]
+            }
+        )
+    ]
+)
 
 #############################################################################
 
@@ -36,6 +44,16 @@ def make_generator_helper(args):
     )
     if args.ckpt_mode is None:
         args.ckpt_mode = "off"
+
+    generator.add_param(
+        key="train.frame_stack",
+        name="frame_stack",
+        group=-1,
+        values=[
+            # 2,
+            10
+        ]
+    )
 
     generator.add_param(
         key="train.data_format",
@@ -64,14 +82,17 @@ def make_generator_helper(args):
         key="train.shuffle_buffer_size",
         name="",
         group=-1,
-        values=[500000],
+        values=[50000],
     )
 
     generator.add_param(
         key="train.batch_size",
         name="bz",
         group=1212111,
-        values=[128],
+        values=[
+            # 128,
+            256
+        ],
         hidename=False,
     )
 
@@ -90,7 +111,8 @@ def make_generator_helper(args):
         name="num_parallel_calls",
         group=404040404,
         values=[
-            200
+            # 200,
+            400
         ],
         hidename=True,
     )
@@ -100,7 +122,8 @@ def make_generator_helper(args):
         name="traj_transform_threads",
         group=303030303,
         values=[
-            48
+            # 48,
+            96
         ],
         hidename=True,
     )
@@ -110,7 +133,8 @@ def make_generator_helper(args):
         name="traj_read_threads",
         group=908090809,
         values=[
-            48
+            # 48,
+            96
         ],
         hidename=True,
     )
