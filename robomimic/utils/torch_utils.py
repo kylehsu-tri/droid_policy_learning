@@ -32,7 +32,7 @@ def hard_update(source, target):
         target (torch.nn.Module): target network to update parameters for
     """
     for target_param, param in zip(target.parameters(), source.parameters()):
-            target_param.copy_(param)
+        target_param.copy_(param)
 
 
 def get_torch_device(try_to_use_cuda):
@@ -146,7 +146,7 @@ def lr_scheduler_from_optim_params(net_optim_params, net, optimizer):
         if lr_scheduler_type == "linear":
             assert len(epoch_schedule) == 1
             end_epoch = epoch_schedule[0]
-            
+
             return optim.lr_scheduler.LinearLR(
                 optimizer,
                 start_factor=1.0,
@@ -161,7 +161,7 @@ def lr_scheduler_from_optim_params(net_optim_params, net, optimizer):
             )
         else:
             raise ValueError("Invalid LR scheduler type: {}".format(lr_scheduler_type))
-        
+
     return lr_scheduler
 
 
@@ -214,15 +214,26 @@ def rot_6d_to_axis_angle(rot_6d):
     rot = matrix_to_axis_angle(rot_mat)
     return rot
 
-def rot_6d_to_euler_angles(rot_6d):
+
+# def rot_6d_to_euler_angles(rot_6d):
+#     """
+#     Converts tensor with rot_6d representation to euler representation.
+#     """
+#     rot_mat = rotation_6d_to_matrix(rot_6d)
+#     rot = scipy.spatial.transform.Rotation.from_matrix(rot_mat.numpy())
+#     rot = rot.as_euler("xyz")
+#     rot = torch.Tensor(rot)
+#     return rot
+
+def rot_6d_to_euler_angles(rot_6d, convention="XYZ"):
     """
     Converts tensor with rot_6d representation to euler representation.
+    From https://github.com/ashwin-balakrishna96/robomimic/commit/c28c407fcd86613a68ac781b2ffda0cfebe33021#diff-6b09e9bfd0da77f5904afc78ff71625484160795daed312c434ddcc5b7a7b620
     """
     rot_mat = rotation_6d_to_matrix(rot_6d)
-    rot = scipy.spatial.transform.Rotation.from_matrix(rot_mat.numpy())
-    rot = rot.as_euler("xyz")
-    rot = torch.Tensor(rot)
+    rot = matrix_to_euler_angles(rot_mat, convention=convention)
     return rot
+
 
 def axis_angle_to_rot_6d(axis_angle):
     """
@@ -247,8 +258,10 @@ class dummy_context_mgr():
     A dummy context manager - useful for having conditional scopes (such
     as @maybe_no_grad). Nothing happens in this scope.
     """
+
     def __enter__(self):
         return None
+
     def __exit__(self, exc_type, exc_value, traceback):
         return False
 
@@ -266,6 +279,8 @@ def maybe_no_grad(no_grad):
 The following utility functions were taken from PyTorch3D:
 https://github.com/facebookresearch/pytorch3d/blob/d84f274a0822da969668d00e831870fd88327845/pytorch3d/transforms/rotation_conversions.py
 """
+
+
 def _sqrt_positive_part(x: torch.Tensor) -> torch.Tensor:
     """
     Returns torch.sqrt(torch.max(0, x))
@@ -363,8 +378,8 @@ def matrix_to_quaternion(matrix: torch.Tensor) -> torch.Tensor:
     # forall i; we pick the best-conditioned one (with the largest denominator)
 
     return quat_candidates[
-        F.one_hot(q_abs.argmax(dim=-1), num_classes=4) > 0.5, :
-    ].reshape(batch_dim + (4,))
+           F.one_hot(q_abs.argmax(dim=-1), num_classes=4) > 0.5, :
+           ].reshape(batch_dim + (4,))
 
 
 def axis_angle_to_matrix(axis_angle: torch.Tensor) -> torch.Tensor:
